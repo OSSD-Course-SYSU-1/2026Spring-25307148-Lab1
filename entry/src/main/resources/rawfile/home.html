@@ -1,0 +1,260 @@
+// 配置常量
+const CONFIG = {
+gridSize: 20,      // 网格大小
+canvasWidth: 600,  // 画布宽度
+canvasHeight: 600, // 画布高度
+initialSpeed: 200, // 初始速度(毫秒)
+speedIncrease: 5,  // 每得10分加速(毫秒)
+maxSpeed: 80       // 最大速度限制
+}
+
+// 方向枚举
+enum Direction {
+UP,
+RIGHT,
+DOWN,
+LEFT
+}
+
+// 位置接口
+interface Position {
+x: number
+y: number
+}
+
+@Entry
+@Component
+struct SnakeGame {
+// 游戏状态
+@State isPlaying: boolean = false
+@State gameOver: boolean = false
+@State gameSpeed: number = CONFIG.initialSpeed
+
+// 蛇的属性
+@State snake: Position[] = [{x: 10, y: 10}]
+@State direction: Direction = Direction.RIGHT
+@State nextDirection: Direction = Direction.RIGHT
+
+// 食物属性
+@State food: Position = {x: 15, y: 15}
+
+// 游戏循环计时器
+private gameLoop: number = -1
+
+// 初始化
+aboutToAppear() {
+this.generateFood()
+}
+
+// 开始游戏
+startGame() {
+this.resetGame()
+this.isPlaying = true
+this.gameOver = false
+this.startGameLoop()
+}
+
+// 重置游戏状态
+resetGame() {
+this.snake = [{x: 10, y: 10}]
+this.direction = Direction.RIGHT
+this.nextDirection = Direction.RIGHT
+this.gameSpeed = CONFIG.initialSpeed
+this.generateFood()
+
+if (this.gameLoop !== -1) {
+clearInterval(this.gameLoop)
+this.gameLoop = -1
+}
+}
+
+// 开始游戏循环
+startGameLoop() {
+this.gameLoop = setInterval(() => {
+this.updateGame()
+}, this.gameSpeed) as unknown as number
+}
+
+// 更新游戏状态
+updateGame() {
+if (!this.isPlaying || this.gameOver) return
+
+// 更新方向
+this.direction = this.nextDirection
+
+// 计算新头部位置
+const head = {...this.snake}
+switch (this.direction) {
+case Direction.UP: head.y -= 1; break
+case Direction.RIGHT: head.x += 1; break
+case Direction.DOWN: head.y += 1; break
+case Direction.LEFT: head.x -= 1; break
+}
+
+// 检查碰撞
+if (this.checkCollision(head)) {
+this.endGame()
+return
+}
+
+// 添加新头部
+this.snake.unshift(head)
+
+// 检查是否吃到食物
+if (head.x === this.food.x && head.y === this.food.y) {
+this.handleFoodEaten()
+} else {
+// 没吃到食物则移除尾部
+this.snake.pop()
+}
+}
+
+// 处理吃到食物的情况
+handleFoodEaten() {
+// 生成新食物
+this.generateFood()
+
+// 加速游戏
+this.gameSpeed = Math.max(
+CONFIG.maxSpeed,
+CONFIG.initialSpeed - Math.floor(this.score / 10) * CONFIG.speedIncrease
+)
+
+// 应用新速度
+clearInterval(this.gameLoop)
+this.startGameLoop()
+}
+
+// 生成新食物
+generateFood() {
+let newFood: Position
+// 确保食物不会出现在蛇身上
+do {
+newFood = {
+x: Math.floor(Math.random() * (CONFIG.canvasWidth / CONFIG.gridSize)),
+y: Math.floor(Math.random() * (CONFIG.canvasHeight / CONFIG.gridSize))
+}
+} while (this.isPositionOnSnake(newFood))
+
+this.food = newFood
+}
+
+// 检查位置是否在蛇身上
+isPositionOnSnake(pos: Position): boolean {
+return this.snake.some(segment =>
+segment.x === pos.x && segment.y === pos.y)
+}
+
+// 检查碰撞
+checkCollision(head: Position): boolean {
+// 撞墙检测
+if (head.x < 0 ||
+head.x >= CONFIG.canvasWidth / CONFIG.gridSize ||
+head.y < 0 ||
+head.y >= CONFIG.canvasHeight / CONFIG.gridSize) {
+return true
+}
+
+// 撞自己检测
+return this.snake.some((segment, index) =>
+index !== 0 && segment.x === head.x && segment.y === head.y)
+}
+
+// 结束游戏
+endGame() {
+this.isPlaying = false
+this.gameOver = true
+clearInterval(this.gameLoop)
+this.gameLoop = -1
+}
+
+// 改变方向
+changeDirection(newDir: Direction) {
+// 防止180度转向
+if ((this.direction === Direction.UP && newDir === Direction.DOWN) ||
+(this.direction === Direction.DOWN && newDir === Direction.UP) ||
+(this.direction === Direction.LEFT && newDir === Direction.RIGHT) ||
+(this.direction === Direction.RIGHT && newDir === Direction.LEFT)) {
+return
+}
+this.nextDirection = newDir
+}
+
+// 绘制游戏元素
+drawGame(ctx: CanvasRenderingContext2D) {
+// 清空画布
+ctx.clearRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight)
+
+// 绘制食物
+ctx.fillStyle = '#FF5252'
+ctx.fillRect(
+this.food.x * CONFIG.gridSize,
+this.food.y * CONFIG.gridSize,
+CONFIG.gridSize,
+CONFIG.gridSize
+)
+
+// 绘制蛇
+this.snake.forEach((segment, index) => {
+ctx.fillStyle = index === 0 ? '#388E3C' : '#4CAF50' // 头部深绿色，身体浅绿色
+ctx.fillRect(
+segment.x * CONFIG.gridSize,
+segment.y * CONFIG.gridSize,
+CONFIG.gridSize,
+CONFIG.gridSize
+)
+})
+}
+
+build() {
+Column() {
+Text('贪吃蛇')
+.fontSize(36)
+.fontWeight(FontWeight.Bold)
+.margin({ top: 20, bottom: 10 })
+
+Canvas(this.drawGame.bind(this))
+.width(CONFIG.canvasWidth)
+.height(CONFIG.canvasHeight)
+.backgroundColor('#ffffff')
+.border({ width: 2, color: '#cccccc' })
+.onKeyEvent((event: KeyEvent) => {
+if (event.type === KeyType.DOWN) {
+switch (event.keyCode) {
+case KeyCode.ARROW_UP: this.changeDirection(Direction.UP); break
+case KeyCode.ARROW_RIGHT: this.changeDirection(Direction.RIGHT); break
+case KeyCode.ARROW_DOWN: this.changeDirection(Direction.DOWN); break
+case KeyCode.ARROW_LEFT: this.changeDirection(Direction.LEFT); break
+case KeyCode.SPACE:
+if (this.gameOver) this.startGame()
+else if (this.isPlaying) this.isPlaying = false
+else this.isPlaying = true
+break
+}
+}
+})
+
+Row() {
+Button(this.isPlaying ? '暂停' : '开始')
+.onClick(() => {
+if (this.gameOver) this.startGame()
+else this.isPlaying = !this.isPlaying
+})
+.width(100)
+.height(40)
+.backgroundColor(this.isPlaying ? '#FF5722' : '#4CAF50')
+
+Button('重置')
+.onClick(() => this.resetGame())
+.width(100)
+.height(40)
+.backgroundColor('#2196F3')
+}
+.margin(20)
+}
+.width('100%')
+.height('100%')
+.backgroundColor('#f9f9f9')
+.justifyContent(FlexAlign.Center)
+}
+}
