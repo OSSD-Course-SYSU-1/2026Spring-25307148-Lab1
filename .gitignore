@@ -1,0 +1,8 @@
+echo "entry/build/
+build/
+oh_modules/
+node_modules/
+.hvigor/
+.idea/
+.DS_Store
+Thumbs.db" > .gitignore
