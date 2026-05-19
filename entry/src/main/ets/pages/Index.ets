@@ -21,6 +21,7 @@ import { IsLeapYearCustomDialog } from '../view/IsLeapYearCustomDialog';
 import { IsPalindromicStringCustomDialog } from '../view/IsPalindromicStringCustomDialog';
 import { MultiplicationTableCustomDialog } from '../view/MultiplicationTableCustomDialog';
 import { StringReversalCustomDialog } from '../view/StringReversalCustomDialog';
+import router from '@ohos.router';
 
 @Entry
 @Component
@@ -97,6 +98,13 @@ struct Index {
           .margin({ top: $r('app.float.button_margin_top') })
           .onClick(() => {
             this.stringReversalCustomDialogController?.open();
+          })
+        Button('冒泡排序可视化')
+          .width($r('app.float.button_width'))
+          .height($r('app.float.button_height'))
+          .margin({ top: $r('app.float.button_margin_top') })
+          .onClick(() => {
+            router.pushUrl({ url: 'pages/BubbleSortVisual' });
           })
         Button($r('app.string.IsLeapYear'))
           .width($r('app.float.button_width'))
