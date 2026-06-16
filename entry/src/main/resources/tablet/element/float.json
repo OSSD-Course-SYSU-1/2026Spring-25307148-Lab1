@@ -1,0 +1,24 @@
+{
+  "float": [
+    {
+      "name": "button_width",
+      "value": "400vp"
+    },
+    {
+      "name": "button_height",
+      "value": "60vp"
+    },
+    {
+      "name": "button_margin_top",
+      "value": "24vp"
+    },
+    {
+      "name": "button_margin_bottom",
+      "value": "24vp"
+    },
+    {
+      "name": "text_font_size",
+      "value": "28fp"
+    }
+  ]
+}

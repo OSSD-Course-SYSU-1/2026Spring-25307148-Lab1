@@ -22,6 +22,7 @@ import { IsPalindromicStringCustomDialog } from '../view/IsPalindromicStringCust
 import { MultiplicationTableCustomDialog } from '../view/MultiplicationTableCustomDialog';
 import { StringReversalCustomDialog } from '../view/StringReversalCustomDialog';
 import router from '@ohos.router';
+import window from '@ohos.window';
 
 @Entry
 @Component
@@ -51,7 +52,6 @@ struct Index {
     alignment: DialogAlignment.Center,
     offset: { dx: CommonConstants.OFFSET_X, dy: CommonConstants.OFFSET_Y }
   });
-
   aboutToAppear(): void {
     AppStorage.setOrCreate('uiContext', this.getUIContext());
   }
@@ -67,60 +67,67 @@ struct Index {
           right: $r('app.float.text_margin_right')
         })
         .font({ size: $r('app.float.text_font_size'), weight: CommonConstants.FONT_WEIGHT_SEVEN_HUNDRED })
-      Column() {
-        Button($r('app.string.DaffodilsNumber'))
-          .width($r('app.float.button_width'))
-          .height($r('app.float.button_height'))
-          .onClick(() => {
-            this.daffodilsNumberCustomDialogController?.open();
-          })
-        Button($r('app.string.MultiplicationTable'))
-          .width($r('app.float.button_width'))
-          .height($r('app.float.button_height'))
-          .margin({ top: $r('app.float.button_margin_top') })
-          .onClick(() => {
-            this.multiplicationTableCustomDialogController?.open();
-            let result = multiplicationTable();
-            for (let index = 0; index < result.length; index++) {
-              Logger.info(result[index].toString());
-            }
-          })
-        Button($r('app.string.IsPalindromicString'))
-          .width($r('app.float.button_width'))
-          .height($r('app.float.button_height'))
-          .margin({ top: $r('app.float.button_margin_top') })
-          .onClick(() => {
-            this.isPalindromicStringCustomDialogController?.open();
-          })
-        Button($r('app.string.StringReversal'))
-          .width($r('app.float.button_width'))
-          .height($r('app.float.button_height'))
-          .margin({ top: $r('app.float.button_margin_top') })
-          .onClick(() => {
-            this.stringReversalCustomDialogController?.open();
-          })
-        Button('冒泡排序可视化')
-          .width($r('app.float.button_width'))
-          .height($r('app.float.button_height'))
-          .margin({ top: $r('app.float.button_margin_top') })
-          .onClick(() => {
-            router.pushUrl({ url: 'pages/BubbleSortVisual' });
-          })
-        Button($r('app.string.IsLeapYear'))
-          .width($r('app.float.button_width'))
-          .height($r('app.float.button_height'))
-          .margin({
-            top: $r('app.float.button_margin_top'),
-            bottom: $r('app.float.button_margin_bottom')
-          })
-          .onClick(() => {
-            this.isLeapYearCustomDialogController?.open();
-          })
+      Scroll() {
+        Column() {
+
+          Button($r('app.string.MultiplicationTable'))
+            .width($r('app.float.button_width'))
+            .height($r('app.float.button_height'))
+            .margin({ top: $r('app.float.button_margin_top') })
+            .onClick(() => {
+              this.multiplicationTableCustomDialogController?.open();
+              let result = multiplicationTable();
+              for (let index = 0; index < result.length; index++) {
+                Logger.info(result[index].toString());
+              }
+            })
+          Button($r('app.string.IsPalindromicString'))
+            .width($r('app.float.button_width'))
+            .height($r('app.float.button_height'))
+            .margin({ top: $r('app.float.button_margin_top') })
+            .onClick(() => {
+              this.isPalindromicStringCustomDialogController?.open();
+            })
+          Button($r('app.string.StringReversal'))
+            .width($r('app.float.button_width'))
+            .height($r('app.float.button_height'))
+            .margin({ top: $r('app.float.button_margin_top') })
+            .onClick(() => {
+              this.stringReversalCustomDialogController?.open();
+            })
+          Button('冒泡排序可视化')
+            .width($r('app.float.button_width'))
+            .height($r('app.float.button_height'))
+            .margin({ top: $r('app.float.button_margin_top') })
+            .onClick(() => {
+              router.pushUrl({ url: 'pages/BubbleSortVisual' });
+            })
+          Button($r('app.string.IsLeapYear'))
+            .width($r('app.float.button_width'))
+            .height($r('app.float.button_height'))
+            .margin({
+              top: $r('app.float.button_margin_top'),
+              bottom: $r('app.float.button_margin_bottom')
+            })
+            .onClick(() => {
+              this.isLeapYearCustomDialogController?.open();
+            })
+        }
+        .width(CommonConstants.PERCENT_FULL)
+        .justifyContent(FlexAlign.SpaceBetween)
       }
       .width(CommonConstants.PERCENT_FULL)
-    }
-    .justifyContent(FlexAlign.SpaceBetween)
-    .width(CommonConstants.PERCENT_FULL)
-    .height(CommonConstants.PERCENT_FULL)
-  }
-}
+      .height(CommonConstants.PERCENT_FULL)
+      .onAppear(() => {
+        try {
+          let windowStage = AppStorage.get('windowStage') as window.WindowStage;
+          if (windowStage) {
+            let win = windowStage.getMainWindowSync();
+            let properties = win.getWindowProperties();
+            AppStorage.setOrCreate('windowHeight', properties.windowRect.height);
+          }
+        } catch (err) {
+          // 失败则忽略
+        }
+      })
+    }}}

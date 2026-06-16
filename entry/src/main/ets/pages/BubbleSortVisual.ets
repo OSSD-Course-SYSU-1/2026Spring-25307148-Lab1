@@ -1,4 +1,5 @@
 import router from '@ohos.router';
+import window from '@ohos.window';
 
 @Entry
 @Component
@@ -9,7 +10,7 @@ struct BubbleSortVisual {
   @State isRunning: boolean = false;
   @State stepMessage: string = '点击生成数组开始';
   private timer: number = 0;
-
+  @State screenHeight: number = 667;
   // 生成随机数组
   generateArray() {
     clearTimeout(this.timer);
@@ -65,6 +66,18 @@ struct BubbleSortVisual {
       this.timer = setTimeout(resolve, ms);
     });
   }
+  aboutToAppear() {
+    try {
+      let windowStage = AppStorage.get('windowStage') as window.WindowStage;
+      if (windowStage) {
+        let win = windowStage.getMainWindowSync();
+        let properties = win.getWindowProperties();
+        this.screenHeight = properties.windowRect.height;
+      }
+    } catch (err) {
+      // 获取失败则保持默认值 667
+    }
+  }
 
   build() {
     Column() {
@@ -84,7 +97,7 @@ struct BubbleSortVisual {
               .margin({ bottom: 4 })
             // 柱子高度 = value * 2 增强视觉
             Blank()
-              .height(value * 2)
+              .height(value / 100 * this.screenHeight * 0.4)
               .width('18%')
               .backgroundColor(
                 // 正在比较的两个元素 → 红色
